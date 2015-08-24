@@ -1,13 +1,4 @@
 
-# coding: utf-8
-
-# # Load Prediction of Scaife-Hall:
-
-# In this IPython Notebook, power consumption and Outdoor Air temperature data is parsed from CSV files(enfuse dataset/iwp dataset) to predict Future Consumption of Power.
-# 
-# 
-# <font color='red'>Please make sure Python and other necessary packages (using pip to install *ipython,  matplotlib, numpy, scikit-learn*) are installed.</font> 
-
 # ## Importing libraries:
 
 # In[1]:
@@ -24,19 +15,14 @@ get_ipython().magic(u'matplotlib inline')
 
 # ## Loading datasets:
 
-# In[8]:
 
 Data_path = 'Datasets/'
-get_ipython().magic(u'ls $Data_path')
 
-
-# In[187]:
 
 csv_path_p = Data_path + 'enfuse/'
 csv_files_p = os.listdir(csv_path)
 
 
-# In[188]:
 
 csv_path_t = Data_path + 'Outdoor_temp/'
 csv_files_t = os.listdir(csv_path_t)
@@ -48,26 +34,29 @@ csv_files_t = os.listdir(csv_path_t)
 # 
 # In order to run regression measurements for every *15 minutes* are required, which is performed by the following functions:
 
-# In[193]:
-
 def read_file(path,filename):
-    data=[];
+    data=[]
     f = open(path+'/'+filename,'rU')
     lines =f.readlines()
     csvlines = csv.reader(lines,skipinitialspace=True,dialect=csv.excel_tab)
     for line in csvlines:
         data.append(line)
     f.close()
-    return data
+    k=[]
+    for line in data:
+        k.append(line[0].split(","))
+    return k
 
 
 def load_temp(path,files,t_0):
-    out=read_file(path,files)
-    data={"Timestamp":np.array([parse(out[i][0]) for i in range(1,len(out))]),
-      "Temperature":np.array([out[i][1] for i in range(1,len(out))])
-        }
-    y=list(data["Timestamp"]).index(t_0)
-    idx=np.arange(y,y+96*15,15)
+    dateConverter = lambda d : dt.datetime.strptime(d,'%d-%b-%y %H:%M:%S')
+    out = np.genfromtxt(csv_path_t+csv_files_t[0],delimiter=",",dtype=(type(dt),float),converters={0: dateConverter},names=['timestamp', 'TempF'],
+                        skiprows=1)
+                        data={"Timestamp":np.array([i[0] for i in out]),
+                            "Temperature":np.array([i[1] for i in out])
+                            }
+                            y=list(data["Timestamp"]).index(t_0)
+idx=np.arange(y,y+96*15,15)
     temp=data["Temperature"][idx]
     
     #Removing the No data points and linearly interpolating
@@ -76,9 +65,9 @@ def load_temp(path,files,t_0):
     t=zip(p,temp)
     for j in i_null[0]:
         t[j]=[]
-    for i in range(len(i_null[0])):
-        t.remove([])
-        
+for i in range(len(i_null[0])):
+    t.remove([])
+    
     clean_t=np.interp(p,[i[0] for i in t],[float(i[1]) for i in t])
     return clean_t
     
