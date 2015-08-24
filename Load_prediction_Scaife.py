@@ -35,17 +35,14 @@ csv_files_t = os.listdir(csv_path_t)
 # In order to run regression measurements for every *15 minutes* are required, which is performed by the following functions:
 
 def read_file(path,filename):
-    data=[]
+    data=[];
     f = open(path+'/'+filename,'rU')
     lines =f.readlines()
-    csvlines = csv.reader(lines,skipinitialspace=True,dialect=csv.excel_tab)
+    csvlines = csv.reader(lines,skipinitialspace=True,)
     for line in csvlines:
         data.append(line)
     f.close()
-    k=[]
-    for line in data:
-        k.append(line[0].split(","))
-    return k
+    return data
 
 
 def load_temp(path,files,t_0):
@@ -56,7 +53,7 @@ def load_temp(path,files,t_0):
                             "Temperature":np.array([i[1] for i in out])
                             }
                             y=list(data["Timestamp"]).index(t_0)
-idx=np.arange(y,y+96*15,15)
+    idx=np.arange(y,y+96*15,15)
     temp=data["Temperature"][idx]
     
     #Removing the No data points and linearly interpolating
@@ -65,7 +62,7 @@ idx=np.arange(y,y+96*15,15)
     t=zip(p,temp)
     for j in i_null[0]:
         t[j]=[]
-for i in range(len(i_null[0])):
+    for i in range(len(i_null[0])):
     t.remove([])
     
     clean_t=np.interp(p,[i[0] for i in t],[float(i[1]) for i in t])
