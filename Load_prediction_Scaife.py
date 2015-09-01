@@ -20,7 +20,7 @@ Data_path = 'Datasets/'
 
 
 csv_path_p = Data_path + 'enfuse/'
-csv_files_p = os.listdir(csv_path)
+csv_files_p = os.listdir(csv_path_p)
 
 
 
@@ -263,12 +263,36 @@ plt.ylabel('Power kW')
 plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
 
 
-# In[ ]:
+#Threshold:
+
+I_rss=np.identity(96)
+A_try=I_rss
+k=I_rss
+for i in range(len(rss)/96):
+    k=np.vstack((k,A_try))
+A=k[:len(rss)]
+
+def rss_kfold(h1,h2):
+    A_train=np.mat(A[h1,:])
+    Y_train=np.mat(rss[h1]).T
+    X=np.linalg.inv(A_train.T*A_train)*A_train.T*Y_train
+    
+    A_test=np.mat(A[h2,:])
+    Y_test=np.mat(rss[h2]).T
+    Y_pred=A_test*X
+    return Y_pred
+
+#Running a k-fold cross validation(k=10)
+
+from sklearn import cross_validation
+kf = cross_validation.KFold(len(rss),10)
 
 
+rss_pred=[]
+for train_index, test_index in kf:
+    rss_pred.append(rss_kfold(train_index,test_index))
 
-
-# In[ ]:
+np.mean(rss)
 
 
 
